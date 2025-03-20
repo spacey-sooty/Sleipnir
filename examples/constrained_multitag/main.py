@@ -58,6 +58,12 @@ def main():
     # a camera located at 0,0,0 (hand-calculated)
     point_observations = [(325, 30), (275, 30)]
 
+    # FIXME
+    for (i in range(points_observations.length)) {
+        point_observations[i][0] = (point_observations[i][0] - cx) / fx
+        point_observations[i][1] = (point_observations[i][1] - cy) / fy
+    }
+
     # initial guess at robot pose. We expect the robot to converge to 0,0,0
     robot_x.set_value(-0.1)
     robot_y.set_value(0.0)
@@ -81,22 +87,19 @@ def main():
         print(f"camera2point = {x.value()}, {y.value()}, {z.value()}")
 
         # coordinates observed at
-        u_observed, v_observed = observation
+        xʼʼ_observed, yʼʼ_observed = observation
 
-        X = x / z
-        Y = y / z
+        xʼʼ = x / z
+        yʼʼ = y / z
 
-        u = fx * X + cx
-        v = fy * Y + cy
+        print(f"Expected xʼʼ {xʼʼ.value()}, saw {xʼʼ_observed}")
+        print(f"Expected yʼʼ {yʼʼ.value()}, saw {yʼʼ_observed}")
 
-        print(f"Expected u {u.value()}, saw {u_observed}")
-        print(f"Expected v {v.value()}, saw {v_observed}")
-
-        u_err = u - u_observed
-        v_err = v - v_observed
+        xʼʼ_err = xʼʼ - xʼʼ_observed
+        yʼʼ_err = yʼʼ - yʼʼ_observed
 
         # Cost function is square of reprojection error
-        J += u_err**2 + v_err**2
+        J += xʼʼ_err**2 + yʼʼ_err**2
 
     problem.minimize(J)
 

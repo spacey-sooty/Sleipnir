@@ -58,6 +58,11 @@ int main() {
   // camera located at 0,0,0 (hand-calculated)
   std::vector point_observations{std::pair{325, 30}, std::pair{275, 30}};
 
+  for (size_t i = 0; i < point_observations.size(); i++) {
+    point_observations[i].first = (point_observations[i].first - cx) / fx;
+    point_observations[i].second = (point_observations[i].second - cy) / fy;
+  }
+
   // initial guess at robot pose. We expect the robot to converge to 0,0,0
   robot_x.set_value(-0.1);
   robot_y.set_value(0.0);
@@ -82,22 +87,19 @@ int main() {
     std::println("camera2point = {}, {}, {}", x.value(), y.value(), z.value());
 
     // coordinates observed at
-    auto [u_observed, v_observed] = observation;
+    auto [xʼʼ_observed, yʼʼ_observed] = observation;
 
-    auto X = x / z;
-    auto Y = y / z;
+    auto xʼʼ = x / z;
+    auto yʼʼ = y / z;
 
-    auto u = fx * X + cx;
-    auto v = fy * Y + cy;
+    std::println("Expected x {}, saw {}", xʼʼ.value(), xʼʼ_observed);
+    std::println("Expected y {}, saw {}", yʼʼ.value(), yʼʼ_observed);
 
-    std::println("Expected u {}, saw {}", u.value(), u_observed);
-    std::println("Expected v {}, saw {}", v.value(), v_observed);
-
-    auto u_err = u - u_observed;
-    auto v_err = v - v_observed;
+    auto xʼʼ_err = xʼʼ - xʼʼ_observed;
+    auto yʼʼ_err = yʼʼ - yʼʼ_observed;
 
     // Cost function is square of reprojection error
-    J += u_err * u_err + v_err * v_err;
+    J += xʼʼ_err * xʼʼ_err + yʼʼ_err * yʼʼ_err;
   }
 
   problem.minimize(J);
